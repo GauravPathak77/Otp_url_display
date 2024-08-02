@@ -1,17 +1,59 @@
-import React from 'react';
-import ReactDOM from 'react-dom/client';
+import React, { useState, useEffect } from 'react';
+import ReactDOM from 'react-dom';
 import './index.css';
-import App from './App';
-import reportWebVitals from './reportWebVitals';
+import readData from './ReadData';
+import storeData from './StoreData';
 
-const root = ReactDOM.createRoot(document.getElementById('root'));
-root.render(
-  <React.StrictMode>
-    <App />
-  </React.StrictMode>
-);
+const App = () => {
+  const [otp, setData] = useState('');
 
-// If you want to start measuring performance in your app, pass a function
-// to log results (for example: reportWebVitals(console.log))
-// or send to an analytics endpoint. Learn more: https://bit.ly/CRA-vitals
-reportWebVitals();
+  useEffect(() => {
+    const fetchData = async () => {
+      const dataFromFirebase = await readData();
+      setData(dataFromFirebase);
+    };
+    fetchData();
+  }, []);
+  
+ 
+  const [latitude, setLatitude] = useState('');
+  const [longitude, setLongitude] = useState('');
+
+  const handleSubmit = (latitude, longitude) => {
+    storeData(latitude, longitude);
+  };
+
+ 
+
+  const fetchGeolocation = () => {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition((position) => {
+        setLatitude(position.coords.latitude);
+        setLongitude(position.coords.longitude);
+        handleSubmit(position.coords.latitude, position.coords.longitude);
+      });
+    } else {
+      alert('Geolocation is not supported by this browser.');
+    }
+  };
+
+  useEffect(() => {
+   
+    fetchGeolocation();
+  }, []);
+
+  return (
+    <div className="container">
+      <div className="content">
+        <div className="card">
+          <h2 className="card-title">otp</h2>
+          <p className="coordinates">Your otp is: {otp}</p>
+         
+        </div>
+      </div>
+    </div>
+  );
+};
+
+ReactDOM.render(<App />, document.getElementById('root'));
+
